@@ -1,18 +1,14 @@
 import streamlit as st
 from groq import Groq
 
-# --------------------------------
 # Page Configuration
-# --------------------------------
 st.set_page_config(
     page_title="AI Chatbot with Memory",
     page_icon="🤖",
     layout="centered"
 )
 
-# --------------------------------
 # Custom CSS
-# --------------------------------
 st.markdown("""
 <style>
 
@@ -61,9 +57,7 @@ footer{
 </style>
 """, unsafe_allow_html=True)
 
-# --------------------------------
 # Load Groq API Key
-# --------------------------------
 try:
     api_key = st.secrets["GROQ_API_KEY"]
 except KeyError:
@@ -72,91 +66,96 @@ except KeyError:
 
 client = Groq(api_key=api_key)
 
-# --------------------------------
 # System Prompt
-# --------------------------------
 SYSTEM_PROMPT = {
     "role": "system",
     "content": "You are a helpful AI assistant."
 }
 
-# --------------------------------
 # Session State
-# --------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# --------------------------------
 # Header
-# --------------------------------
 st.title("🤖 AI Chatbot with Memory")
 st.caption("Powered by Groq • Llama 3.3")
 
-# --------------------------------
 # Sidebar
-# --------------------------------
 with st.sidebar:
-
     st.header("⚙️ Settings")
-
     st.success("Model: Llama 3.3 70B")
-
     if st.button("🗑 Clear Chat"):
-
         st.session_state.messages = []
-
         st.rerun()
 
-# --------------------------------
 # Display Previous Messages
-# --------------------------------
-for message in st.session_state.messages:
+def display_previous_messages():
+    for message in st.session_state.messages:
+        avatar = "👤" if message["role"] == "user" else "🤖"
+        with st.chat_message(message["role"], avatar=avatar):
+            st.markdown(message["content"])
 
-    avatar = "👤" if message["role"] == "user" else "🤖"
+display_previous_messages()
 
-    with st.chat_message(message["role"], avatar=avatar):
-        st.markdown(message["content"])
-
-# --------------------------------
 # User Input
-# --------------------------------
-prompt = st.chat_input("Ask me anything...")
+def get_user_input():
+    prompt = st.chat_input("Ask me anything...")
+    if prompt:
+        return prompt
+    else:
+        return None
 
-if prompt:
+user_input = get_user_input()
 
+if user_input:
     # Save user message
     st.session_state.messages.append(
         {
             "role": "user",
-            "content": prompt
+            "content": user_input
         }
     )
 
     with st.chat_message("user", avatar="👤"):
-        st.markdown(prompt)
+        st.markdown(user_input)
 
     # Build conversation with memory
     conversation = [SYSTEM_PROMPT] + st.session_state.messages
 
-    with st.chat_message("assistant", avatar="🤖"):
-
-        with st.spinner("Thinking..."):
-
+    def get_assistant_response(conversation):
+        try:
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=conversation,
                 temperature=0.7,
                 max_tokens=1024,
             )
+            return response.choices[0].message.content
+        except Exception as e:
+            return str(e)
 
-            answer = response.choices[0].message.content
+    # Get assistant response
+    assistant_response = get_assistant_response(conversation)
 
-            st.markdown(answer)
+    # Display assistant response
+    with st.chat_message("assistant", avatar="🤖"):
+        st.markdown(assistant_response)
 
     # Save assistant response
     st.session_state.messages.append(
         {
             "role": "assistant",
-            "content": answer
+            "content": assistant_response
         }
     )
+
+    # Display chat history
+    if st.button("📝 View Chat History"):
+        st.write("### Chat History:")
+        for i, message in enumerate(st.session_state.messages):
+            st.write(f"**Message {i+1}:**")
+            st.write(message["content"])
+            st.write("---")
+
+# Display previous messages again
+display_previous_messages()
