@@ -103,10 +103,11 @@ footer{
 # --------------------------------
 # Groq API
 # --------------------------------
-api_key = os.getenv("GROQ_API_KEY")
-
-if not api_key:
-    st.error("❌ GROQ_API_KEY not found.")
+try:
+    api_key = st.secrets["GROQ_API_KEY"]
+except KeyError:
+    st.error("❌ GROQ_API_KEY is missing from Streamlit Secrets.")
+    st.info("Go to App Settings → Secrets and add:\n\nGROQ_API_KEY = \"gsk_your_api_key\"")
     st.stop()
 
 client = Groq(api_key=api_key)
