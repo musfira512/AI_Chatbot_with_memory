@@ -11,36 +11,17 @@ st.set_page_config(
     layout="centered"
 )
 
-# ---------------------------
-# Custom CSS
-# ---------------------------
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-html, body, [class*="css"]{
-    font-family:'Inter',sans-serif;
-}
-
 .stApp{
-    background: linear-gradient(135deg,#eef2ff,#f8fafc);
+background: linear-gradient(135deg,#141E30,#243B55);
 }
 
-h1{
-    text-align:center;
-    color:#1E293B;
+[data-testid="stChatMessage"]{
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(12px);
+border-radius:20px;
+padding:15px;
+border:1px solid rgba(255,255,255,0.1);
 }
-
-.stChatMessage{
-    border-radius:15px;
-}
-
-[data-testid="stSidebar"]{
-    background:#F8FAFC;
-}
-</style>
-""", unsafe_allow_html=True)
-
 # ---------------------------
 # Groq API
 # ---------------------------
