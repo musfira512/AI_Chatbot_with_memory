@@ -86,6 +86,18 @@ SYSTEM_PROMPT = {
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+messages = [SYSTEM_PROMPT]
+
+for item in st.session_state.messages:
+    messages.append(item)
+
+messages.append(
+    {
+        "role": "user",
+        "content": prompt
+    }
+)
+
 # --------------------------------
 # Header
 # --------------------------------
