@@ -136,17 +136,8 @@ if prompt:
     with st.chat_message("user", avatar="👤"):
         st.markdown(prompt)
 
-# Build conversation with complete chat history
-conversation = [SYSTEM_PROMPT]
-
-# Convert Streamlit history into Groq message format
-for item in st.session_state.messages:
-    conversation.append(
-        {
-            "role": item["role"],
-            "content": item["content"]
-        }
-    )
+# Build conversation with memory
+conversation = [SYSTEM_PROMPT] + st.session_state.messages
     with st.chat_message("assistant", avatar="🤖"):
 
         with st.spinner("Thinking..."):
