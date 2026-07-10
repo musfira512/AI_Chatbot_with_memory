@@ -145,4 +145,7 @@ if user_input:
     # Save assistant response
     st.session_state.messages.append(
         {
-            "
+            "role": "assistant", 
+            "content": answer 
+        } 
+    )
