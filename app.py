@@ -101,8 +101,6 @@ def display_previous_messages():
         with st.chat_message(message["role"], avatar=avatar):
             st.markdown(message["content"])
 
-display_previous_messages()
-
 # User Input
 def get_user_input():
     prompt = st.chat_input("Ask me anything...")
@@ -121,9 +119,6 @@ if user_input:
             "content": user_input
         }
     )
-
-    with st.chat_message("user", avatar="👤"):
-        st.markdown(user_input)
 
     # Build conversation with memory
     conversation = [SYSTEM_PROMPT] + st.session_state.messages
@@ -150,10 +145,4 @@ if user_input:
     # Save assistant response
     st.session_state.messages.append(
         {
-            "role": "assistant",
-            "content": assistant_response
-        }
-    )
-
-# Display previous messages again
-display_previous_messages()
+            "
