@@ -87,6 +87,12 @@ with st.sidebar:
     if st.button("🗑 Clear Chat"):
         st.session_state.messages = []
         st.rerun()
+    if st.button("📝 View Chat History"):
+        st.write("### Chat History:")
+        for i, message in enumerate(st.session_state.messages):
+            st.write(f"**Message {i+1}:**")
+            st.write(message["content"])
+            st.write("---")
 
 # Display Previous Messages
 def display_previous_messages():
@@ -148,14 +154,6 @@ if user_input:
             "content": assistant_response
         }
     )
-
-    # Display chat history
-    if st.button("📝 View Chat History"):
-        st.write("### Chat History:")
-        for i, message in enumerate(st.session_state.messages):
-            st.write(f"**Message {i+1}:**")
-            st.write(message["content"])
-            st.write("---")
 
 # Display previous messages again
 display_previous_messages()
