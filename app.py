@@ -103,7 +103,7 @@ def display_previous_messages():
 
 # User Input
 def get_user_input():
-    prompt = st.chat_input("Ask me anything...")
+    prompt = st.text_input("Ask me anything...", key="user_input")
     if prompt:
         return prompt
     else:
@@ -111,7 +111,7 @@ def get_user_input():
 
 user_input = get_user_input()
 
-if user_input:
+if user_input and user_input not in [message["content"] for message in st.session_state.messages if message["role"] == "user"]:
     # Save user message
     st.session_state.messages.append(
         {
@@ -149,3 +149,6 @@ if user_input:
             "content": assistant_response 
         } 
     )
+
+# Display Previous Messages
+display_previous
