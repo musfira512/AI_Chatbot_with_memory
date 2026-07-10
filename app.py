@@ -86,17 +86,6 @@ SYSTEM_PROMPT = {
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-messages = [SYSTEM_PROMPT]
-
-for item in st.session_state.messages:
-    messages.append(item)
-
-messages.append(
-    {
-        "role": "user",
-        "content": prompt
-    }
-)
 
 # --------------------------------
 # Header
@@ -147,9 +136,17 @@ if prompt:
     with st.chat_message("user", avatar="👤"):
         st.markdown(prompt)
 
-    # Build conversation with memory
-    conversation = [SYSTEM_PROMPT] + st.session_state.messages
+# Build conversation with complete chat history
+conversation = [SYSTEM_PROMPT]
 
+# Convert Streamlit history into Groq message format
+for item in st.session_state.messages:
+    conversation.append(
+        {
+            "role": item["role"],
+            "content": item["content"]
+        }
+    )
     with st.chat_message("assistant", avatar="🤖"):
 
         with st.spinner("Thinking..."):
