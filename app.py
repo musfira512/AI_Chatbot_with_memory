@@ -86,7 +86,6 @@ SYSTEM_PROMPT = {
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-
 # --------------------------------
 # Header
 # --------------------------------
@@ -136,8 +135,9 @@ if prompt:
     with st.chat_message("user", avatar="👤"):
         st.markdown(prompt)
 
-# Build conversation with memory
-conversation = [SYSTEM_PROMPT] + st.session_state.messages
+    # Build conversation with memory
+    conversation = [SYSTEM_PROMPT] + st.session_state.messages
+
     with st.chat_message("assistant", avatar="🤖"):
 
         with st.spinner("Thinking..."):
