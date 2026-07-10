@@ -151,4 +151,4 @@ if user_input and user_input not in [message["content"] for message in st.sessio
     )
 
 # Display Previous Messages
-display_previous
+display_previous_messages()
