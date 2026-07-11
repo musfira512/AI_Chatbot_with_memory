@@ -88,10 +88,13 @@ SYSTEM_PROMPT = {
 CHAT_FILE = "chat_history.json"
 
 if "chats" not in st.session_state:
-
+    data = []
     if os.path.exists(CHAT_FILE):
-        with open(CHAT_FILE, "r", encoding="utf-8") as file:
-            data = json.load(file)
+        try:
+            with open(CHAT_FILE, "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except json.JSONDecodeError:
+            data = []
 
     # Check if the file is already in the new format
     if (
@@ -102,10 +105,8 @@ if "chats" not in st.session_state:
     ):
         st.session_state.chats = data
     else:
-        # Old format detected
+        # Old format detected or empty file
         st.session_state.chats = []
-else:
-    st.session_state.chats = []
 
 # Current selected chat index
 if "current_chat_index" not in st.session_state:
@@ -120,6 +121,7 @@ def save_chats():
             ensure_ascii=False,
             indent=4
         )
+
 # --------------------------------
 # Header
 # --------------------------------
@@ -136,27 +138,26 @@ with st.sidebar:
     # ---------------------------
     # New Chat Button
     # ---------------------------
-  if st.button("➕ New Chat", use_container_width=True):
+    if st.button("➕ New Chat", use_container_width=True):
 
-    if (
-        st.session_state.current_chat_index is None
-        or st.session_state.current_chat_index >= len(st.session_state.chats)
-        or len(st.session_state.chats) == 0
-        or st.session_state.chats[st.session_state.current_chat_index]["messages"]
-    ):
+        if (
+            st.session_state.current_chat_index is None
+            or st.session_state.current_chat_index >= len(st.session_state.chats)
+            or len(st.session_state.chats) == 0
+            or st.session_state.chats[st.session_state.current_chat_index]["messages"]
+        ):
 
-        st.session_state.chats.append(
-            {
-                "title": "New Chat",
-                "messages": []
-            }
-        )
+            st.session_state.chats.append(
+                {
+                    "title": "New Chat",
+                    "messages": []
+                }
+            )
 
-        st.session_state.current_chat_index = len(st.session_state.chats) - 1
+            st.session_state.current_chat_index = len(st.session_state.chats) - 1
+            save_chats()
 
-        save_chats()
-
-    st.rerun()
+        st.rerun()
 
     # ---------------------------
     # Conversation List
@@ -168,17 +169,16 @@ with st.sidebar:
             key=f"chat_{i}",
             use_container_width=True
         ):
-
             st.session_state.current_chat_index = i
             st.rerun()
 
     st.divider()
-
     st.success("Model: Llama 3.3 70B")
+
 # --------------------------------
 # Display Current Chat
 # --------------------------------
-if st.session_state.current_chat_index is not None:
+if st.session_state.current_chat_index is not None and st.session_state.chats:
 
     current_chat = st.session_state.chats[
         st.session_state.current_chat_index
@@ -199,7 +199,7 @@ prompt = st.chat_input("Ask me anything...")
 if prompt:
 
     # If no chat exists, create one automatically
-    if st.session_state.current_chat_index is None:
+    if st.session_state.current_chat_index is None or len(st.session_state.chats) == 0:
 
         st.session_state.chats.append(
             {
@@ -245,7 +245,6 @@ if prompt:
             )
 
             answer = response.choices[0].message.content
-
             st.markdown(answer)
 
     # Save assistant response
