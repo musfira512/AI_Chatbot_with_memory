@@ -187,43 +187,39 @@ prompt = st.chat_input("Ask me anything...")
 
 if prompt:
 
-# If no chat exists, create one automatically
+    # If no chat exists, create one automatically
     if st.session_state.current_chat_index is None:
 
         st.session_state.chats.append(
+            {
+                "title": prompt[:30],
+                "messages": []
+            }
+        )
+
+        st.session_state.current_chat_index = len(st.session_state.chats) - 1
+
+    current_chat = st.session_state.chats[
+        st.session_state.current_chat_index
+    ]
+
+    # Change "New Chat" title to first message
+    if current_chat["title"] == "New Chat":
+        current_chat["title"] = prompt[:30]
+
+    # Save user message
+    current_chat["messages"].append(
         {
-            "title": prompt[:30],
-            "messages": []
+            "role": "user",
+            "content": prompt
         }
     )
-
-        st.session_state.current_chat_index = (
-        len(st.session_state.chats) - 1
-    )
-
-current_chat = st.session_state.chats[
-    st.session_state.current_chat_index
-]
-
-# Change "New Chat" title to first message
-if current_chat["title"] == "New Chat":
-    current_chat["title"] = prompt[:30]
-    save_chats()
-
-# Save user message
-current_chat["messages"].append(
-    {
-        "role": "user",
-        "content": prompt
-    }
-)
 
     with st.chat_message("user", avatar="👤"):
         st.markdown(prompt)
 
     # Build conversation with memory
     conversation = [SYSTEM_PROMPT]
-
     conversation.extend(current_chat["messages"])
 
     with st.chat_message("assistant", avatar="🤖"):
@@ -242,12 +238,11 @@ current_chat["messages"].append(
             st.markdown(answer)
 
     # Save assistant response
-current_chat["messages"].append(
-    {
-        "role": "assistant",
-        "content": answer
-    }
-)
-    # Save chat history to file
-   save_chats()
-        
+    current_chat["messages"].append(
+        {
+            "role": "assistant",
+            "content": answer
+        }
+    )
+
+    save_chats()
