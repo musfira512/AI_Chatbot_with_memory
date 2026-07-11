@@ -1,7 +1,5 @@
 import streamlit as st
 from groq import Groq
-import json
-import os
 
 # --------------------------------
 # Page Configuration
@@ -88,11 +86,6 @@ SYSTEM_PROMPT = {
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Load chat history from file
-if os.path.exists('chat_history.json'):
-    with open('chat_history.json', 'r') as f:
-        st.session_state.messages = json.load(f)
-
 # --------------------------------
 # Header
 # --------------------------------
@@ -111,10 +104,6 @@ with st.sidebar:
     if st.button("🗑 Clear Chat"):
 
         st.session_state.messages = []
-
-        # Save chat history to file
-        with open('chat_history.json', 'w') as f:
-            json.dump(st.session_state.messages, f)
 
         st.rerun()
 
@@ -171,7 +160,3 @@ if prompt:
             "content": answer
         }
     )
-
-    # Save chat history to file
-    with open('chat_history.json', 'w') as f:
-        json.dump(st.session_state.messages,
