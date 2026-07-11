@@ -116,19 +116,15 @@ with st.sidebar:
     st.success("Model: Llama 3.3 70B")
 
     if st.button("🗑 Clear Chat"):
-
-    # Only clear the UI
-    st.session_state.current_chat = []
-
-    st.rerun()
+        # Only clear the UI
+        st.session_state.current_chat = []
+        st.rerun()
 
     if st.button("📂 Restore Previous Chat"):
-
-    st.session_state.current_chat = (
+        st.session_state.current_chat = (
         st.session_state.saved_history.copy()
-    )
-
-    st.rerun()
+        )
+        st.rerun()
 
 # --------------------------------
 # Display Previous Messages
