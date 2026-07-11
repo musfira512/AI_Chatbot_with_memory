@@ -136,28 +136,27 @@ with st.sidebar:
     # ---------------------------
     # New Chat Button
     # ---------------------------
-    if st.button("➕ New Chat", use_container_width=True):
+  if st.button("➕ New Chat", use_container_width=True):
 
-        # Only create a new chat if the current one has messages
-        if (
-            st.session_state.current_chat_index is None
-            or st.session_state.chats[st.session_state.current_chat_index]["messages"]
-        ):
+    if (
+        st.session_state.current_chat_index is None
+        or st.session_state.current_chat_index >= len(st.session_state.chats)
+        or len(st.session_state.chats) == 0
+        or st.session_state.chats[st.session_state.current_chat_index]["messages"]
+    ):
 
-            st.session_state.chats.append(
-                {
-                    "title": "New Chat",
-                    "messages": []
-                }
-            )
+        st.session_state.chats.append(
+            {
+                "title": "New Chat",
+                "messages": []
+            }
+        )
 
-            st.session_state.current_chat_index = len(st.session_state.chats) - 1
+        st.session_state.current_chat_index = len(st.session_state.chats) - 1
 
-            save_chats()
+        save_chats()
 
-        st.rerun()
-
-    st.divider()
+    st.rerun()
 
     # ---------------------------
     # Conversation List
