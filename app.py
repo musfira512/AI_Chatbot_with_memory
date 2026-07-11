@@ -83,23 +83,31 @@ SYSTEM_PROMPT = {
 }
 
 # --------------------------------
-# Load Chat History
+# Load All Chats
 # --------------------------------
-if "saved_history" not in st.session_state:
+CHAT_FILE = "chat_history.json"
 
-    if os.path.exists("chat_history.json"):
+if "chats" not in st.session_state:
 
-        with open("chat_history.json", "r") as file:
-            st.session_state.saved_history = json.load(file)
-
+    if os.path.exists(CHAT_FILE):
+        with open(CHAT_FILE, "r", encoding="utf-8") as file:
+            st.session_state.chats = json.load(file)
     else:
-        st.session_state.saved_history = []
+        st.session_state.chats = []
 
-if "current_chat" not in st.session_state:
+# Current selected chat index
+if "current_chat_index" not in st.session_state:
+    st.session_state.current_chat_index = None
 
-    st.session_state.current_chat = (
-        st.session_state.saved_history.copy()
-    )
+
+def save_chats():
+    with open(CHAT_FILE, "w", encoding="utf-8") as file:
+        json.dump(
+            st.session_state.chats,
+            file,
+            ensure_ascii=False,
+            indent=4
+        )
 # --------------------------------
 # Header
 # --------------------------------
@@ -111,30 +119,66 @@ st.caption("Powered by Groq • Llama 3.3")
 # --------------------------------
 with st.sidebar:
 
-    st.header("⚙️ Settings")
+    st.title("💬 Chats")
+
+    # ---------------------------
+    # New Chat Button
+    # ---------------------------
+   if st.button("➕ New Chat", use_container_width=True):
+
+    # Only create a new chat if the current one has messages
+    if (
+        st.session_state.current_chat_index is None
+        or st.session_state.chats[st.session_state.current_chat_index]["messages"]
+    ):
+
+        st.session_state.chats.append(
+            {
+                "title": "New Chat",
+                "messages": []
+            }
+        )
+
+        st.session_state.current_chat_index = len(st.session_state.chats) - 1
+
+        save_chats()
+
+    st.rerun()
+
+    # ---------------------------
+    # Conversation List
+    # ---------------------------
+    for i, chat in enumerate(st.session_state.chats):
+
+        if st.button(
+            chat["title"],
+            key=f"chat_{i}",
+            use_container_width=True
+        ):
+
+            st.session_state.current_chat_index = i
+
+            st.rerun()
+
+    st.divider()
 
     st.success("Model: Llama 3.3 70B")
 
-    if st.button("🗑 Clear Chat"):
-        # Only clear the UI
-        st.session_state.current_chat = []
-        st.rerun()
-
-    if st.button("📂 Restore Previous Chat"):
-        st.session_state.current_chat = (
-        st.session_state.saved_history.copy()
-        )
-        st.rerun()
-
 # --------------------------------
-# Display Previous Messages
+# Display Current Chat
 # --------------------------------
-for message in st.session_state.current_chat:
+if st.session_state.current_chat_index is not None:
 
-    avatar = "👤" if message["role"] == "user" else "🤖"
+    current_chat = st.session_state.chats[
+        st.session_state.current_chat_index
+    ]
 
-    with st.chat_message(message["role"], avatar=avatar):
-        st.markdown(message["content"])
+    for message in current_chat["messages"]:
+
+        avatar = "👤" if message["role"] == "user" else "🤖"
+
+        with st.chat_message(message["role"], avatar=avatar):
+            st.markdown(message["content"])
 
 # --------------------------------
 # User Input
@@ -143,19 +187,44 @@ prompt = st.chat_input("Ask me anything...")
 
 if prompt:
 
-    # Save user message
-    st.session_state.current_chat.append(
+# If no chat exists, create one automatically
+if st.session_state.current_chat_index is None:
+
+    st.session_state.chats.append(
         {
-            "role": "user",
-            "content": prompt
+            "title": prompt[:30],
+            "messages": []
         }
     )
+
+    st.session_state.current_chat_index = (
+        len(st.session_state.chats) - 1
+    )
+
+current_chat = st.session_state.chats[
+    st.session_state.current_chat_index
+]
+
+# Change "New Chat" title to first message
+if current_chat["title"] == "New Chat":
+    current_chat["title"] = prompt[:30]
+    save_chats()
+
+# Save user message
+current_chat["messages"].append(
+    {
+        "role": "user",
+        "content": prompt
+    }
+)
 
     with st.chat_message("user", avatar="👤"):
         st.markdown(prompt)
 
     # Build conversation with memory
-    conversation = [SYSTEM_PROMPT] + st.session_state.current_chat
+    conversation = [SYSTEM_PROMPT]
+
+    conversation.extend(current_chat["messages"])
 
     with st.chat_message("assistant", avatar="🤖"):
 
@@ -173,23 +242,12 @@ if prompt:
             st.markdown(answer)
 
     # Save assistant response
-    st.session_state.current_chat.append(
-        {
-            "role": "assistant",
-            "content": answer
-        }
-    )
-    # Save chat history to file
-    st.session_state.saved_history = (
-    st.session_state.current_chat.copy()
+current_chat["messages"].append(
+    {
+        "role": "assistant",
+        "content": answer
+    }
 )
-
-with open("chat_history.json", "w", encoding="utf-8") as file:
-
-    json.dump(
-        st.session_state.saved_history,
-        file,
-        ensure_ascii=False,
-        indent=4
-    )
+    # Save chat history to file
+   save_chats()
         
