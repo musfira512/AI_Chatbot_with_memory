@@ -85,13 +85,21 @@ SYSTEM_PROMPT = {
 # --------------------------------
 # Load Chat History
 # --------------------------------
-if "chat_history" not in st.session_state:
-    if os.path.exists("chat_history.json"):
-        with open("chat_history.json", "r") as file:
-            st.session_state.chat_history = json.load(file)
-    else:
-        st.session_state.chat_history = []
+if "saved_history" not in st.session_state:
 
+    if os.path.exists("chat_history.json"):
+
+        with open("chat_history.json", "r") as file:
+            st.session_state.saved_history = json.load(file)
+
+    else:
+        st.session_state.saved_history = []
+
+if "current_chat" not in st.session_state:
+
+    st.session_state.current_chat = (
+        st.session_state.saved_history.copy()
+    )
 # --------------------------------
 # Header
 # --------------------------------
@@ -109,17 +117,23 @@ with st.sidebar:
 
     if st.button("🗑 Clear Chat"):
 
-        st.session_state.chat_history = []
+    # Only clear the UI
+    st.session_state.current_chat = []
 
-        with open("chat_history.json", "w") as file:
-            json.dump(st.session_state.chat_history, file)
+    st.rerun()
 
-        st.rerun()
+    if st.button("📂 Restore Previous Chat"):
+
+    st.session_state.current_chat = (
+        st.session_state.saved_history.copy()
+    )
+
+    st.rerun()
 
 # --------------------------------
 # Display Previous Messages
 # --------------------------------
-for message in st.session_state.chat_history:
+for message in st.session_state.current_chat:
 
     avatar = "👤" if message["role"] == "user" else "🤖"
 
@@ -134,7 +148,7 @@ prompt = st.chat_input("Ask me anything...")
 if prompt:
 
     # Save user message
-    st.session_state.chat_history.append(
+    st.session_state.current_chat.append(
         {
             "role": "user",
             "content": prompt
@@ -145,7 +159,7 @@ if prompt:
         st.markdown(prompt)
 
     # Build conversation with memory
-    conversation = [SYSTEM_PROMPT] + st.session_state.chat_history
+    conversation = [SYSTEM_PROMPT] + st.session_state.current_chat
 
     with st.chat_message("assistant", avatar="🤖"):
 
@@ -163,13 +177,23 @@ if prompt:
             st.markdown(answer)
 
     # Save assistant response
-    st.session_state.chat_history.append(
+    st.session_state.current_chat.append(
         {
             "role": "assistant",
             "content": answer
         }
     )
-
     # Save chat history to file
-    with open("chat_history.json", "w") as file:
-        json.dump(st.session_state.chat_history, file)
+    st.session_state.saved_history = (
+    st.session_state.current_chat.copy()
+)
+
+with open("chat_history.json", "w", encoding="utf-8") as file:
+
+    json.dump(
+        st.session_state.saved_history,
+        file,
+        ensure_ascii=False,
+        indent=4
+    )
+        
