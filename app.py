@@ -1,4 +1,6 @@
 import streamlit as st
+import json
+import os
 from groq import Groq
 
 # --------------------------------
@@ -81,10 +83,14 @@ SYSTEM_PROMPT = {
 }
 
 # --------------------------------
-# Session State
+# Load Chat History
 # --------------------------------
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+if "chat_history" not in st.session_state:
+    if os.path.exists("chat_history.json"):
+        with open("chat_history.json", "r") as file:
+            st.session_state.chat_history = json.load(file)
+    else:
+        st.session_state.chat_history = []
 
 # --------------------------------
 # Header
@@ -103,14 +109,17 @@ with st.sidebar:
 
     if st.button("🗑 Clear Chat"):
 
-        st.session_state.messages = []
+        st.session_state.chat_history = []
+
+        with open("chat_history.json", "w") as file:
+            json.dump(st.session_state.chat_history, file)
 
         st.rerun()
 
 # --------------------------------
 # Display Previous Messages
 # --------------------------------
-for message in st.session_state.messages:
+for message in st.session_state.chat_history:
 
     avatar = "👤" if message["role"] == "user" else "🤖"
 
@@ -125,7 +134,7 @@ prompt = st.chat_input("Ask me anything...")
 if prompt:
 
     # Save user message
-    st.session_state.messages.append(
+    st.session_state.chat_history.append(
         {
             "role": "user",
             "content": prompt
@@ -136,7 +145,7 @@ if prompt:
         st.markdown(prompt)
 
     # Build conversation with memory
-    conversation = [SYSTEM_PROMPT] + st.session_state.messages
+    conversation = [SYSTEM_PROMPT] + st.session_state.chat_history
 
     with st.chat_message("assistant", avatar="🤖"):
 
@@ -154,9 +163,13 @@ if prompt:
             st.markdown(answer)
 
     # Save assistant response
-    st.session_state.messages.append(
+    st.session_state.chat_history.append(
         {
             "role": "assistant",
             "content": answer
         }
     )
+
+    # Save chat history to file
+    with open("chat_history.json", "w") as file:
+        json.dump(st.session_state.chat_history, file)
