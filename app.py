@@ -188,16 +188,16 @@ prompt = st.chat_input("Ask me anything...")
 if prompt:
 
 # If no chat exists, create one automatically
-if st.session_state.current_chat_index is None:
+    if st.session_state.current_chat_index is None:
 
-    st.session_state.chats.append(
+        st.session_state.chats.append(
         {
             "title": prompt[:30],
             "messages": []
         }
     )
 
-    st.session_state.current_chat_index = (
+        st.session_state.current_chat_index = (
         len(st.session_state.chats) - 1
     )
 
