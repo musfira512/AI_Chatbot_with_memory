@@ -91,9 +91,21 @@ if "chats" not in st.session_state:
 
     if os.path.exists(CHAT_FILE):
         with open(CHAT_FILE, "r", encoding="utf-8") as file:
-            st.session_state.chats = json.load(file)
+            data = json.load(file)
+
+    # Check if the file is already in the new format
+    if (
+        isinstance(data, list)
+        and len(data) > 0
+        and isinstance(data[0], dict)
+        and "title" in data[0]
+    ):
+        st.session_state.chats = data
     else:
+        # Old format detected
         st.session_state.chats = []
+else:
+    st.session_state.chats = []
 
 # Current selected chat index
 if "current_chat_index" not in st.session_state:
